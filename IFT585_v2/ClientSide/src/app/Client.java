@@ -129,72 +129,69 @@ public class Client extends Thread {
     
 private void goBackN(ArrayList<DatagramPacket> packetList) throws IOException {
     	
-    	//initate the window
-    	int WINDOW_SIZE = 4;
-    	
-    	int next_ACK = 0;
-    	int last_sent = 0;
-    	
-    	int totalPackets = packetList.size();
-    	
-    	while(next_ACK < totalPackets - 1) 
-    	{
-    		// send window
-    		for(int i = next_ACK; (i < next_ACK + WINDOW_SIZE) && (i < totalPackets - 1); i++)
-    		{
-    			//System.out.println("i is: " + i);
-    			socket.send(packetList.get(i));
-    			last_sent = i;
-    		}
+	//initate the window
+	int WINDOW_SIZE = 4;
+	
+	int next_ACK = 0;
+	int last_sent = 0;
+	
+	int totalPackets = packetList.size();
+	
+	while(next_ACK < totalPackets) 
+	{
+		// send window
+		for(int i = next_ACK; (i < next_ACK + WINDOW_SIZE) && (i < totalPackets - 1); i++)
+		{
+			//System.out.println("i is: " + i);
+			socket.send(packetList.get(i));
+			last_sent = i;
+		}
+		
+		// receive client ACK
+		DatagramPacket ack = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
+		String ackString;
+		
+		//System.out.println("waiting for: " + next_ACK);
+		
+		socket.receive(ack); 
+		ackString = new String(ack.getData());
+		
+		int ackInt = Integer.parseInt(ackString.trim());
+		
+		if( ackInt == totalPackets - 1) 
+		{
+			System.out.println("File was sent to the client");
+			return;
+		}
+		
+		
+		//check if it is the required ACK and send the next frame
+		while(next_ACK == ackInt)
+		{
     		
-    		// receive client ACK
-    		DatagramPacket ack = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
-    		String ackString;
-    		
-    		//System.out.println("waiting for: " + next_ACK);
-    		System.out.println("last : " + last_sent);
-    		if( last_sent == totalPackets - 2) 
-    		{
-    			System.out.println("File was sent to the client");
-    			return;
-    		}
-    		
+			next_ACK++;
+			
+			if(last_sent + 1 >= totalPackets ) {
+				System.out.println("File was sent to the client");
+				return;
+			}
+			
+			socket.send(packetList.get(last_sent + 1));
+			
+			last_sent = last_sent + 1;
+			
+			ack = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
+			
+			//System.out.println("waiting for: " + next_ACK);
+
+
     		socket.receive(ack); 
     		ackString = new String(ack.getData());
-    		
-    		int ackInt = Integer.parseInt(ackString.trim());
-//    		System.out.println("acknum : " + ackInt);
-//    		if( ackInt == totalPackets - 1) 
-//    		{
-//    			System.out.println("File was sent to the client");
-//    			return;
-//    		}
-    		
-    		
-    		//check if it is the required ACK and send the next frame
-    		while(next_ACK == ackInt)
-    		{
-        		
-    			next_ACK++;
-    			
-  
-    			
-    			socket.send(packetList.get(last_sent + 1));
-    			
-    			last_sent = last_sent + 1;
-    			
-    			ack = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
-    			
-    			//System.out.println("waiting for: " + next_ACK);
-
-
-        		socket.receive(ack); 
-        		ackString = new String(ack.getData());
-    			
-    		}
-    		//else resend window
-    		
-    	}
+			
+		}
+		//else resend window
+		
+	}
 
     }
 

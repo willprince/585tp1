@@ -126,7 +126,7 @@ public class Handler extends Thread {
     	byte[] receiveData = new byte[1024];
         byte[] sendData;
         System.out.println("filename: " + fileName);
-        FileOutputStream  FOS = new FileOutputStream(new File(System.getProperty("user.dir") + "test.txt"));
+        FileOutputStream  FOS = new FileOutputStream(new File("test.txt"));
         
         int lastFrame = 0;
         String theFile = "";
@@ -167,8 +167,16 @@ public class Handler extends Thread {
                         {        
                             FOS.write(newPacketData[i]);
                         }
+            			
+            			//SEND ACK TO SERVER WITH THE HIGHEST FRAME NUMBER
+                		sendData = new byte[index.getBytes().length];
+                		sendData = index.getBytes();
+                		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, inetC, clientPort);
+                        
+                		socket.send(sendPacket);
             		
                 		FOS.close();
+                		System.out.println("file transfered");
         				return 0;
         			}
         			
