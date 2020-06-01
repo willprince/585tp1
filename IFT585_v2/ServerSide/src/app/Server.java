@@ -30,12 +30,38 @@ public class Server {
     }
 
 
-    public int start() {
-        for(int i = 0; i < MAX_CLIENTS; i++){
-            Handler handler = new Handler(socket, port, inet);
-            //handler.start();        //pars un thread
-            handler.run();
+    public void start() throws IOException {
+        while(true){
+            DatagramPacket connectionRequest = new DatagramPacket(new byte[17], 17);
+            System.out.println("WAITING FOR CONNECTION PACKET ON PORT : " + port + " / ON ADDRESS : " + inet);
+            socket.receive(connectionRequest);
+
+            //verifie la connection
+            if(connection(connectionRequest)){
+                //pars un thread
+                Handler handler = new Handler(socket, port, inet, connectionRequest);
+                handler.run();
+            }
         }
-        return 0;
+    }
+
+    private boolean connection(DatagramPacket packet) throws IOException {
+        String s = read(packet);
+        System.out.println("FROM CLIENT: " + s);
+        if(s.equals("CONNECTIONREQUEST")){
+            try{
+                socket.connect(packet.getAddress(), packet.getPort());
+                return true;
+            } catch (Exception e) {
+                System.out.println("ERROR GETTING CONNECTION");
+            }
+        }
+        return false;
+    }
+
+    /** Converti un paquet en String. */
+    public String read(DatagramPacket packet) throws IOException {
+        return new String(packet.getData());
     }
 }
+

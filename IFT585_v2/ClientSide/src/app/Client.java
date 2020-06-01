@@ -160,7 +160,7 @@ private void goBackN(ArrayList<DatagramPacket> packetList) throws IOException {
 		
 		if( ackInt  >= totalPackets ) 
 		{
-			System.out.println("File was sent to the client");
+			System.out.println("File was sent to the server");
 			return;
 		}
 		

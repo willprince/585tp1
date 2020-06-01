@@ -17,39 +17,39 @@ public class Handler extends Thread {
     private int port;
     private InetAddress inet;
     HashMap implementedRequests;
+
+    private DatagramPacket connectionRequest;
     
     private InetAddress inetC;
     private int clientPort;
 
-    public Handler(DatagramSocket socket, int port, InetAddress inet) {
+    public Handler(DatagramSocket socket, int port, InetAddress inet, DatagramPacket packet) {
         this.socket = socket;
         this.port = port;
         this.inet = inet;
+        connectionRequest = packet;
         implementedRequests = makeTransactions();
     }
 
     @Override
     public void run() {
-        DatagramPacket connectionRequest = new DatagramPacket(new byte[17], 17);
-        while(true){
-            try{
-                while(true){                                            //waiting for connectionRequest
-                    if(connection(connectionRequest)) break;            //establish connection
-                }
-                sendAnswer(connectionRequest);
+        try{
+            sendAnswer(connectionRequest);
 
-                DatagramPacket requestPacket = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
-                System.out.println("WAITING FOR TRANSACTION PACKET ON PORT : " + port + " / ON ADDRESS : " + inet);
-                socket.receive(requestPacket);
+            DatagramPacket requestPacket = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
+            System.out.println("WAITING FOR TRANSACTION PACKET ON PORT : " + port + " / ON ADDRESS : " + inet);
+            socket.receive(requestPacket);
                 
-                inetC = requestPacket.getAddress();
-                clientPort = requestPacket.getPort();
+            inetC = requestPacket.getAddress();
+            clientPort = requestPacket.getPort();
                 		
-                String request = read(requestPacket);                  //waiting for request
-                handleRequest(request);                                //serve request
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            String request = read(requestPacket);                  //waiting for request
+            handleRequest(request);                                //serve request
+        } catch (Exception e) {
+            System.out.println("ERROR INITIALIZING A THREAD FOR A REQUEST");
+            e.printStackTrace();
+        } finally {
+            socket.disconnect();
         }
     }
 
