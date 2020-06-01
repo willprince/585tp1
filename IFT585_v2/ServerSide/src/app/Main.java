@@ -11,7 +11,7 @@ public class Main {
         //init
     	try {
     		InetAddress iPAddress = InetAddress.getByName("localhost");
-            int port = 18895;
+            int port = 18897;
 
             Server server = new Server(port, iPAddress);
             server.start();
