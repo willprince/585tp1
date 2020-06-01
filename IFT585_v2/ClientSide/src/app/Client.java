@@ -116,7 +116,7 @@ public class Client extends Thread {
         System.out.println("--Sending file request");
         socket.send(sendRequest);
 
-        FileInputStream targetStream = new FileInputStream(new File("verySmallFile.txt"));
+        FileInputStream targetStream = new FileInputStream(new File("fileToSend/verySmallFile.txt"));
         int fileSize = targetStream.available();
 
         ArrayList<DatagramPacket> packetList = makePackets(fileSize, targetStream);
@@ -137,7 +137,7 @@ private void goBackN(ArrayList<DatagramPacket> packetList) throws IOException {
     	
     	int totalPackets = packetList.size();
     	
-    	while(next_ACK < totalPackets) 
+    	while(next_ACK < totalPackets - 1) 
     	{
     		// send window
     		for(int i = next_ACK; (i < next_ACK + WINDOW_SIZE) && (i < totalPackets - 1); i++)
@@ -152,17 +152,23 @@ private void goBackN(ArrayList<DatagramPacket> packetList) throws IOException {
     		String ackString;
     		
     		//System.out.println("waiting for: " + next_ACK);
+    		System.out.println("last : " + last_sent);
+    		if( last_sent == totalPackets - 2) 
+    		{
+    			System.out.println("File was sent to the client");
+    			return;
+    		}
     		
     		socket.receive(ack); 
     		ackString = new String(ack.getData());
     		
     		int ackInt = Integer.parseInt(ackString.trim());
-    		
-    		if( ackInt == totalPackets - 1) 
-    		{
-    			System.out.println("File was sent to the client");
-    			return;
-    		}
+//    		System.out.println("acknum : " + ackInt);
+//    		if( ackInt == totalPackets - 1) 
+//    		{
+//    			System.out.println("File was sent to the client");
+//    			return;
+//    		}
     		
     		
     		//check if it is the required ACK and send the next frame
@@ -171,10 +177,7 @@ private void goBackN(ArrayList<DatagramPacket> packetList) throws IOException {
         		
     			next_ACK++;
     			
-    			if(last_sent + 1 >= totalPackets ) {
-    				System.out.println("File was sent to the client");
-    				return;
-    			}
+  
     			
     			socket.send(packetList.get(last_sent + 1));
     			

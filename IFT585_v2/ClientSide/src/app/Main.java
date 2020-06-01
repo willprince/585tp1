@@ -14,9 +14,9 @@ public class Main {
 //	        System.out.println("File as been transfered");
 			
 			InetAddress iPAddress = InetAddress.getByName("localhost");
-	        Client client = new Client(18836, iPAddress);
+	        Client client = new Client(18869, iPAddress);
 	        client.sendFile("verySmallFile.txt");
-			
+
 		}
 		catch (Exception e) 
 		{

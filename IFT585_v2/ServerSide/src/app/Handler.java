@@ -17,7 +17,9 @@ public class Handler extends Thread {
     private int port;
     private InetAddress inet;
     HashMap implementedRequests;
-
+    
+    private InetAddress inetC;
+    private int clientPort;
 
     public Handler(DatagramSocket socket, int port, InetAddress inet) {
         this.socket = socket;
@@ -39,6 +41,10 @@ public class Handler extends Thread {
                 DatagramPacket requestPacket = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
                 System.out.println("WAITING FOR TRANSACTION PACKET ON PORT : " + port + " / ON ADDRESS : " + inet);
                 socket.receive(requestPacket);
+                
+                inetC = requestPacket.getAddress();
+                clientPort = requestPacket.getPort();
+                		
                 String request = read(requestPacket);                  //waiting for request
                 handleRequest(request);                                //serve request
             } catch (Exception e) {
@@ -115,12 +121,12 @@ public class Handler extends Thread {
     
     public int receiveFile(String fileName) throws IOException 
     {
-    	System.out.println("receiving file " + fileName + " to port : " + port + ", from address : " + inet);
+    	System.out.println("receiving file " + fileName + " to port : " + clientPort + ", from address : " + inetC);
     	
     	byte[] receiveData = new byte[1024];
         byte[] sendData;
         System.out.println("filename: " + fileName);
-        FileOutputStream  FOS = new FileOutputStream("fileToSend/verySmallFile.txt");
+        FileOutputStream  FOS = new FileOutputStream(new File(System.getProperty("user.dir") + "test.txt"));
         
         int lastFrame = 0;
         String theFile = "";
@@ -161,15 +167,8 @@ public class Handler extends Thread {
                         {        
                             FOS.write(newPacketData[i]);
                         }
-            			FOS.close();
-            			
-            			//SEND final ACK TO SERVER WITH THE HIGHEST FRAME NUMBER
-                		sendData = new byte[index.getBytes().length];
-                		sendData = index.getBytes();
-                		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, inet, port);
-                        
-                		socket.send(sendPacket);
-        				
+            		
+                		FOS.close();
         				return 0;
         			}
         			
@@ -192,7 +191,7 @@ public class Handler extends Thread {
         		//SEND ACK TO SERVER WITH THE HIGHEST FRAME NUMBER
         		sendData = new byte[index.getBytes().length];
         		sendData = index.getBytes();
-        		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, inet, port);
+        		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, inetC, clientPort);
                 
         		socket.send(sendPacket);
 
