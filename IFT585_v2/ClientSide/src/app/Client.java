@@ -116,7 +116,7 @@ public class Client extends Thread {
         System.out.println("--Sending file request");
         socket.send(sendRequest);
 
-        FileInputStream targetStream = new FileInputStream(new File("fileToSend/verySmallFile.txt"));
+        FileInputStream targetStream = new FileInputStream(new File("fileToSend/" + fileName.trim()));
         int fileSize = targetStream.available();
 
         ArrayList<DatagramPacket> packetList = makePackets(fileSize, targetStream);
@@ -222,7 +222,7 @@ private void goBackN(ArrayList<DatagramPacket> packetList) throws IOException {
         byte[] receiveData = new byte[1024];
         byte[] sendData;
         System.out.println("filename: " + fileName);
-        FileOutputStream  FOS = new FileOutputStream(fileName);
+        FileOutputStream  FOS = new FileOutputStream(new File("receivedFiles/" + fileName.trim()));
         
         int lastFrame = 0;
         String theFile = "";
